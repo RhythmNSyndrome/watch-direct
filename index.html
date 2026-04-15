@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, max-scale=1.0, user-scalable=no">
-    <title>WATCH DIRECT - Master</title>
+    <title>WATCH DIRECT - Live</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,7 +12,6 @@
         .page { display: none; min-height: 100vh; }
         .page.active { display: block; }
         .nav-item.active { color: #1A365D; font-weight: bold; }
-        .tab-bar { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
 <body>
@@ -26,17 +25,13 @@
         async function fetchWatches() {
             const { data, error } = await _supabase.from('watches').select('*').order('created_at', { ascending: false });
             if (error) return;
-            
             const container = document.getElementById('watch-list');
             container.innerHTML = ''; 
-
             if (!data || data.length === 0) {
                 container.innerHTML = '<p class="col-span-2 text-center py-20 text-slate-400 text-sm">등록된 매물이 없습니다.</p>';
                 return;
             }
-
             data.forEach(watch => {
-                // 이미지가 없으면 기본 시계 이미지 사용
                 const img = watch.image_url || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=500';
                 container.innerHTML += `
                     <div onclick="openDetail('${watch.model_name}', ${watch.target_price}, '${img}')" class="bg-white rounded-2xl overflow-hidden shadow-sm border cursor-pointer active:scale-95 transition-all">
@@ -51,39 +46,61 @@
             });
         }
 
-        // [기능] 사진 업로드 및 등록
+        // [기능] 진짜 사진 업로드 및 등록
         async function uploadWatch() {
             const model = document.getElementById('input-model').value;
             const price = document.getElementById('input-price').value;
             const fileInput = document.getElementById('input-image');
             const btn = document.getElementById('reg-btn');
             
-            if(!model || !price) { alert('모델명과 가격을 입력해주세요.'); return; }
+            if(!model || !price || !fileInput.files[0]) { alert('사진, 모델명, 가격을 모두 입력해주세요.'); return; }
 
-            btn.innerText = '처리 중...';
+            btn.innerText = '이미지 업로드 중...';
             btn.disabled = true;
 
-            let imageUrl = '';
-            
-            // 사진이 선택되었다면 업로드 로직 (지금은 간단히 외부 URL 샘플로 대체, 추후 스토리지 연동 가능)
-            // 임시로 사장님이 사진을 올리는 느낌을 내기 위해 랜덤 시계 사진을 할당합니다.
-            imageUrl = 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800';
+            const file = fileInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
 
-            const { error } = await _supabase.from('watches').insert([
+            // 1. Storage에 사진 업로드
+            const { data: uploadData, error: uploadError } = await _supabase.storage
+                .from('watch-images')
+                .upload(filePath, file);
+
+            if (uploadError) { alert('업로드 실패: ' + uploadError.message); btn.disabled = false; return; }
+
+            // 2. 사진 URL 가져오기
+            const { data: urlData } = _supabase.storage.from('watch-images').getPublicUrl(filePath);
+            const imageUrl = urlData.publicUrl;
+
+            // 3. DB에 저장
+            const { error: dbError } = await _supabase.from('watches').insert([
                 { model_name: model, target_price: parseInt(price), image_url: imageUrl }
             ]);
 
-            if (error) {
-                alert('에러: ' + error.message);
-            } else {
-                alert('등록 완료!');
+            if (dbError) { alert('DB 저장 실패: ' + dbError.message); } 
+            else {
+                alert('등록 완료! 홈 화면에서 확인하세요.');
                 document.getElementById('input-model').value = '';
                 document.getElementById('input-price').value = '';
+                document.getElementById('preview-img').style.display = 'none';
                 showPage('home');
                 fetchWatches();
             }
             btn.innerText = '검수 예약 및 등록';
             btn.disabled = false;
+        }
+
+        // 사진 미리보기
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById('preview-img');
+                output.src = reader.result;
+                output.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
         }
 
         function openDetail(name, price, img) {
@@ -96,18 +113,11 @@
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            
-            // 탭바 표시 여부 (상세페이지에서는 숨김)
             const tabBar = document.getElementById('tab-bar');
-            if(pageId === 'detail') tabBar.style.display = 'none';
-            else tabBar.style.display = 'flex';
-
-            // 활성 탭 표시
+            tabBar.style.display = (pageId === 'detail') ? 'none' : 'flex';
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            const items = document.querySelectorAll('.nav-item');
-            if(pageId === 'home') items[0].classList.add('active');
-            if(pageId === 'sell') items[1].classList.add('active');
-            
+            const idx = pageId === 'home' ? 0 : pageId === 'sell' ? 1 : pageId === 'support' ? 2 : -1;
+            if(idx !== -1) document.querySelectorAll('.nav-item')[idx].classList.add('active');
             window.scrollTo(0, 0);
         }
 
@@ -115,27 +125,23 @@
     </script>
 
     <nav class="bg-white border-b p-4 sticky top-0 z-50 flex justify-between items-center">
-        <h1 onclick="showPage('home')" class="text-xl font-black text-[#1A365D] tracking-tighter cursor-pointer">WATCH DIRECT</h1>
-        <div class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span class="text-[10px] font-bold text-slate-400 uppercase">Live Server</span>
-        </div>
+        <h1 onclick="showPage('home')" class="text-xl font-black text-[#1A365D] tracking-tighter cursor-pointer underline decoration-4">WATCH DIRECT</h1>
     </nav>
 
     <div id="home" class="page active pb-24">
-        <div id="watch-list" class="p-4 grid grid-cols-2 gap-4">
-            </div>
+        <div id="watch-list" class="p-4 grid grid-cols-2 gap-4"></div>
     </div>
 
     <div id="sell" class="page pb-24 p-6">
-        <h2 class="text-2xl font-bold mb-6">시계 판매 등록</h2>
+        <h2 class="text-2xl font-bold mb-6 italic">List Your Watch</h2>
         <div class="space-y-6">
-            <div class="bg-slate-100 rounded-2xl p-8 text-center border-2 border-dashed border-slate-300">
-                <input type="file" id="input-image" class="hidden" accept="image/*">
-                <label for="input-image" class="cursor-pointer">
+            <div class="bg-slate-100 rounded-2xl p-4 text-center border-2 border-dashed border-slate-300 relative overflow-hidden aspect-video flex flex-col items-center justify-center">
+                <input type="file" id="input-image" class="hidden" accept="image/*" onchange="previewImage(event)">
+                <label for="input-image" class="cursor-pointer z-10">
                     <span class="text-3xl block mb-2">📸</span>
-                    <span class="text-xs font-bold text-slate-500">시계 정면 사진 업로드</span>
+                    <span class="text-xs font-bold text-slate-500">실물 사진을 올려주세요</span>
                 </label>
+                <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hidden">
             </div>
             <div>
                 <label class="text-[10px] font-bold text-slate-400 uppercase">모델명</label>
@@ -149,39 +155,58 @@
         </div>
     </div>
 
+    <div id="support" class="page pb-24 p-6">
+        <div class="text-center py-10">
+            <h2 class="text-3xl font-black text-slate-900 mb-2">Concierge</h2>
+            <p class="text-slate-400 text-sm">전문 상담원이 안전한 거래를 돕습니다.</p>
+        </div>
+        <div class="space-y-4">
+            <div onclick="window.open('https://pf.kakao.com')" class="bg-[#FEE500] p-6 rounded-3xl flex items-center justify-between cursor-pointer">
+                <span class="font-bold">카카오톡 1:1 상담</span>
+                <span class="text-xl">➔</span>
+            </div>
+            <div class="bg-white border p-6 rounded-3xl flex items-center justify-between shadow-sm">
+                <span class="font-bold">내 매물 정품 검수 현황</span>
+                <span class="text-slate-300">준비중</span>
+            </div>
+            <div class="bg-white border p-6 rounded-3xl flex items-center justify-between shadow-sm">
+                <span class="font-bold">가품 신고 센터</span>
+                <span class="text-slate-300 text-xl">🚨</span>
+            </div>
+            <div class="bg-slate-900 text-white p-6 rounded-3xl">
+                <h3 class="font-bold mb-2">안전 거래 가이드</h3>
+                <p class="text-[10px] opacity-60 leading-relaxed">워치다이렉트는 직거래 전 정밀 검수를 원칙으로 하며, 가품 판정 시 판매자에게 민형사상 책임을 묻습니다.</p>
+            </div>
+        </div>
+    </div>
+
     <div id="detail" class="page bg-white">
         <div class="relative">
-            <button onclick="showPage('home')" class="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center shadow-lg text-xl">←</button>
+            <button onclick="showPage('home')" class="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center shadow-lg">←</button>
             <img id="detail-img" src="" class="w-full aspect-[4/5] object-cover">
         </div>
         <div class="p-6">
-            <h2 id="detail-name" class="text-2xl font-black text-slate-900 tracking-tight">모델명</h2>
+            <h2 id="detail-name" class="text-2xl font-black">모델명</h2>
             <div class="mt-6 p-6 bg-slate-900 text-white rounded-3xl">
-                <p class="text-[10px] uppercase tracking-widest opacity-60 mb-1">Estimated Value</p>
+                <p class="text-[10px] opacity-60 mb-1">Current Bid</p>
                 <p id="detail-price" class="text-3xl font-black">₩ 0</p>
-            </div>
-            <div class="mt-8 space-y-4">
-                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl">
-                    <span class="text-xl">🛡️</span>
-                    <p class="text-xs font-medium text-slate-600">명장 정밀 검수 후 거래가 확정됩니다.</p>
-                </div>
             </div>
             <button class="w-full bg-[#1A365D] text-white py-5 rounded-2xl font-bold mt-10 shadow-xl">입찰 참여하기</button>
         </div>
     </div>
 
-    <div id="tab-bar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t px-10 py-4 flex justify-between items-center z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-        <button onclick="showPage('home')" class="nav-item active flex flex-col items-center">
+    <div id="tab-bar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t px-10 py-4 flex justify-between items-center z-50">
+        <button onclick="showPage('home')" class="nav-item active flex flex-col items-center flex-1">
             <span class="text-xl">🏠</span>
-            <span class="text-[10px] mt-1">홈</span>
+            <span class="text-[10px] font-bold mt-1">홈</span>
         </button>
-        <button onclick="showPage('sell')" class="nav-item flex flex-col items-center">
+        <button onclick="showPage('sell')" class="nav-item flex flex-col items-center flex-1">
             <span class="text-xl">➕</span>
-            <span class="text-[10px] mt-1">판매</span>
+            <span class="text-[10px] font-bold mt-1">판매</span>
         </button>
-        <button onclick="alert('곧 업데이트 예정입니다!')" class="nav-item flex flex-col items-center">
+        <button onclick="showPage('support')" class="nav-item flex flex-col items-center flex-1">
             <span class="text-xl">💬</span>
-            <span class="text-[10px] mt-1">센터</span>
+            <span class="text-[10px] font-bold mt-1">상담</span>
         </button>
     </div>
 
