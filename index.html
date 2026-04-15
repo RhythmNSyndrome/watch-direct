@@ -2,114 +2,80 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>워치다이렉트 - 컬렉터 직거래 플랫폼</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>워치다이렉트 - 컬렉터 직거래</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-end; }
-        .modal.active { display: flex; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .nav-item.active { color: #1A365D; font-weight: bold; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 overflow-x-hidden">
-    <nav class="bg-[#1A365D] text-white p-4 sticky top-0 z-50 shadow-md">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-tight">WATCH DIRECT</h1>
-            <div class="text-xs bg-blue-500 px-2 py-1 rounded">BETA</div>
-        </div>
+<body class="bg-slate-50 text-slate-900">
+
+    <nav class="bg-white border-b p-4 sticky top-0 z-50 flex justify-between items-center">
+        <h1 class="text-xl font-black text-[#1A365D] tracking-tighter">WATCH DIRECT</h1>
+        <span class="text-[10px] bg-slate-100 px-2 py-1 rounded-full font-bold">SEOUL</span>
     </nav>
 
-    <main class="max-w-md mx-auto pb-32">
-        <div class="bg-white aspect-square w-full overflow-hidden shadow-sm">
-            <img src="https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?q=80&w=1000&auto=format&fit=crop" alt="럭셔리 워치" class="w-full h-full object-cover">
-        </div>
-
-        <div class="p-6 bg-white border-b">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Live Auction</span>
-                    <h2 class="text-2xl font-bold mt-2">Rolex Daytona</h2>
-                    <p class="text-slate-400 text-sm">Ref. 126500LN | 2024 White Dial</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase">Time Left</p>
-                    <p class="text-lg font-bold text-red-500 tracking-tighter">08:45:12</p>
+    <div id="home" class="page active pb-24">
+        <div class="p-4 grid grid-cols-2 gap-4">
+            <div onclick="showPage('detail')" class="bg-white rounded-2xl overflow-hidden shadow-sm border">
+                <img src="https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=500" class="w-full aspect-square object-cover">
+                <div class="p-3">
+                    <p class="text-[10px] text-red-500 font-bold uppercase">8시간 남음</p>
+                    <h3 class="font-bold text-sm truncate">로렉스 데이토나</h3>
+                    <p class="text-xs text-slate-400">₩ 48,500,000</p>
                 </div>
             </div>
-
-            <div class="bg-[#1A365D] rounded-2xl p-5 text-white shadow-xl mb-6">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-xs opacity-70">현재 최고 입찰가</span>
-                    <span class="text-xs bg-white/20 px-2 py-0.5 rounded font-medium">12명 참여중</span>
-                </div>
-                <div class="text-3xl font-bold tracking-tight">₩ 48,500,000</div>
-            </div>
-
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="text-blue-600 text-lg">📊</span>
-                    <h3 class="font-bold text-sm">실시간 시세 가이드</h3>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="border-r border-slate-200">
-                        <p class="text-[10px] text-slate-400 font-bold">국내 평균 시세</p>
-                        <p class="text-sm font-bold text-slate-700">₩ 52,000,000</p>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 font-bold">해외 평균 시세</p>
-                        <p class="text-sm font-bold text-slate-700">₩ 49,800,000</p>
-                    </div>
-                </div>
-                <div class="mt-3 pt-3 border-t border-slate-200">
-                    <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Watch Direct 추천가</p>
-                    <p class="text-base font-extrabold text-[#1A365D]">₩ 47,500,000 ~ 50,000,000</p>
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm border opacity-80">
+                <img src="https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=500" class="w-full aspect-square object-cover">
+                <div class="p-3">
+                    <p class="text-[10px] text-slate-400 font-bold">입찰 대기중</p>
+                    <h3 class="font-bold text-sm truncate">로렉스 서브마리너</h3>
+                    <p class="text-xs text-slate-400">₩ 16,500,000</p>
                 </div>
             </div>
-        </div>
-
-        <div class="p-6 space-y-4">
-            <h3 class="font-bold text-sm text-slate-500 uppercase tracking-widest px-1">Trust Guarantee</h3>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center shadow-sm">
-                <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mr-4 text-blue-600 font-bold">✓</div>
-                <div>
-                    <p class="text-sm font-bold">MOU 공인 검수소 보증</p>
-                    <p class="text-xs text-slate-400">명장의 정밀 검수 후 거래가 확정됩니다.</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <div id="bidModal" class="modal px-4 pb-8">
-        <div class="bg-white w-full max-w-md mx-auto rounded-3xl p-6 shadow-2xl">
-            <h3 class="text-xl font-bold mb-4">입찰 전 확인해주세요</h3>
-            <div class="bg-slate-50 p-4 rounded-xl mb-6 space-y-3">
-                <div class="flex items-start gap-3">
-                    <span class="text-red-500 mt-0.5 font-bold">!</span>
-                    <p class="text-sm text-slate-600">낙찰 후 거래 파기 시, <strong>예약금 10만원은 차압</strong>됩니다.</p>
-                </div>
-            </div>
-            <button id="confirmBid" class="w-full bg-[#1A365D] text-white font-bold py-4 rounded-2xl mb-3 shadow-lg">동의하고 카드 등록하기</button>
-            <button onclick="toggleModal()" class="w-full text-slate-400 font-medium py-2">취소</button>
         </div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t z-50">
-        <div class="max-w-md mx-auto">
-            <button onclick="toggleModal()" class="w-full bg-[#1A365D] hover:bg-blue-900 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98]">
-                입찰 참여하기
+    <div id="sell" class="page pb-24 p-6">
+        <h2 class="text-2xl font-bold mb-6">판매 예약하기</h2>
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-bold text-slate-400 uppercase">시계 모델명</label>
+                <input type="text" placeholder="예: 로렉스 서브마리너" class="w-full border-b py-2 outline-none focus:border-[#1A365D]">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-slate-400 uppercase">희망 시작가</label>
+                <input type="number" placeholder="₩" class="w-full border-b py-2 outline-none focus:border-[#1A365D]">
+            </div>
+            <div class="bg-slate-100 aspect-video rounded-2xl flex flex-col items-center justify-center text-slate-400 border-2 border-dashed">
+                <span class="text-2xl">+</span>
+                <p class="text-xs">시계 사진 추가</p>
+            </div>
+            <button class="w-full bg-[#1A365D] text-white py-4 rounded-2xl font-bold shadow-lg">검수 예약 및 등록</button>
+        </div>
+    </div>
+
+    <div id="support" class="page pb-24 p-6">
+        <h2 class="text-2xl font-bold mb-2">고객센터</h2>
+        <p class="text-slate-400 text-sm mb-8">워치다이렉트는 24시간 열려있습니다.</p>
+        
+        <div class="space-y-3">
+            <button onclick="location.href='https://pf.kakao.com'" class="w-full bg-[#FEE500] text-[#1A1A1C] py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                카카오톡 1:1 상담
+            </button>
+            <button class="w-full bg-white border py-4 rounded-2xl font-bold text-slate-600">
+                노쇼 및 부정거래 신고
+            </button>
+            <button class="w-full bg-white border py-4 rounded-2xl font-bold text-slate-600">
+                자주 묻는 질문 (FAQ)
             </button>
         </div>
     </div>
 
-    <script>
-        function toggleModal() {
-            document.getElementById('bidModal').classList.toggle('active');
-        }
-        document.getElementById('confirmBid').onclick = function() {
-            alert('카드 등록 기능을 준비 중입니다.');
-            toggleModal();
-        }
-    </script>
-</body>
-</html>
+    <div id="detail" class="page pb-32">
+        <button onclick="showPage('home')" class="p-4 text-slate-400">
