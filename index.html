@@ -22,33 +22,54 @@
 
     <main class="max-w-md mx-auto pb-32">
         <div class="bg-white aspect-square w-full overflow-hidden shadow-sm">
-            <img src="https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000&auto=format&fit=crop" alt="럭셔리 워치" class="w-full h-full object-cover">
+            <img src="https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?q=80&w=1000&auto=format&fit=crop" alt="럭셔리 워치" class="w-full h-full object-cover">
         </div>
 
         <div class="p-6 bg-white border-b">
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Live Auction</span>
-                    <h2 class="text-2xl font-bold mt-2">Rolex Submariner</h2>
-                    <p class="text-slate-400 text-sm">Ref. 126610LN | 2024 Full Set</p>
+                    <h2 class="text-2xl font-bold mt-2">Rolex Daytona</h2>
+                    <p class="text-slate-400 text-sm">Ref. 126500LN | 2024 White Dial</p>
                 </div>
                 <div class="text-right">
                     <p class="text-[10px] text-slate-400 font-bold uppercase">Time Left</p>
-                    <p class="text-lg font-bold text-red-500 tabular-nums">14:22:05</p>
+                    <p class="text-lg font-bold text-red-500 tracking-tighter">08:45:12</p>
                 </div>
             </div>
 
-            <div class="bg-[#1A365D] rounded-2xl p-5 text-white shadow-xl">
+            <div class="bg-[#1A365D] rounded-2xl p-5 text-white shadow-xl mb-6">
                 <div class="flex justify-between items-center mb-1">
                     <span class="text-xs opacity-70">현재 최고 입찰가</span>
-                    <span class="text-xs bg-white/20 px-2 py-0.5 rounded font-medium">8명 참여중</span>
+                    <span class="text-xs bg-white/20 px-2 py-0.5 rounded font-medium">12명 참여중</span>
                 </div>
-                <div class="text-3xl font-bold tracking-tight">₩ 16,500,000</div>
+                <div class="text-3xl font-bold tracking-tight">₩ 48,500,000</div>
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-blue-600 text-lg">📊</span>
+                    <h3 class="font-bold text-sm">실시간 시세 가이드</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="border-r border-slate-200">
+                        <p class="text-[10px] text-slate-400 font-bold">국내 평균 시세</p>
+                        <p class="text-sm font-bold text-slate-700">₩ 52,000,000</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold">해외 평균 시세</p>
+                        <p class="text-sm font-bold text-slate-700">₩ 49,800,000</p>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-200">
+                    <p class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Watch Direct 추천가</p>
+                    <p class="text-base font-extrabold text-[#1A365D]">₩ 47,500,000 ~ 50,000,000</p>
+                </div>
             </div>
         </div>
 
         <div class="p-6 space-y-4">
-            <h3 class="font-bold text-sm text-slate-500 uppercase tracking-widest">Trust Guarantee</h3>
+            <h3 class="font-bold text-sm text-slate-500 uppercase tracking-widest px-1">Trust Guarantee</h3>
             <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center shadow-sm">
                 <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mr-4 text-blue-600 font-bold">✓</div>
                 <div>
@@ -56,39 +77,20 @@
                     <p class="text-xs text-slate-400">명장의 정밀 검수 후 거래가 확정됩니다.</p>
                 </div>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center shadow-sm">
-                <div class="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center mr-4 text-orange-600 font-bold">!</div>
-                <div>
-                    <p class="text-sm font-bold">노쇼 방지 예약금 시스템</p>
-                    <p class="text-xs text-slate-400">거래 파기 시 예약금이 상대에게 보상됩니다.</p>
-                </div>
-            </div>
         </div>
     </main>
 
     <div id="bidModal" class="modal px-4 pb-8">
-        <div class="bg-white w-full max-w-md mx-auto rounded-3xl p-6 shadow-2xl animate-bounce-in">
+        <div class="bg-white w-full max-w-md mx-auto rounded-3xl p-6 shadow-2xl">
             <h3 class="text-xl font-bold mb-4">입찰 전 확인해주세요</h3>
             <div class="bg-slate-50 p-4 rounded-xl mb-6 space-y-3">
                 <div class="flex items-start gap-3">
                     <span class="text-red-500 mt-0.5 font-bold">!</span>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        낙찰 후 거래를 파기할 경우, <strong>예약금 10만원은 차압</strong>되어 피해자와 플랫폼에 지급됩니다.
-                    </p>
-                </div>
-                <div class="flex items-start gap-3 border-t pt-3 border-slate-200">
-                    <span class="text-red-500 mt-0.5 font-bold">!</span>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        노쇼 발생 시 해당 계정은 <strong>즉시 영구 제명</strong> 처리됩니다.
-                    </p>
+                    <p class="text-sm text-slate-600">낙찰 후 거래 파기 시, <strong>예약금 10만원은 차압</strong>됩니다.</p>
                 </div>
             </div>
-            <button id="confirmBid" class="w-full bg-[#1A365D] text-white font-bold py-4 rounded-2xl mb-3 shadow-lg">
-                동의하고 카드 등록하기
-            </button>
-            <button onclick="toggleModal()" class="w-full text-slate-400 font-medium py-2">
-                취소
-            </button>
+            <button id="confirmBid" class="w-full bg-[#1A365D] text-white font-bold py-4 rounded-2xl mb-3 shadow-lg">동의하고 카드 등록하기</button>
+            <button onclick="toggleModal()" class="w-full text-slate-400 font-medium py-2">취소</button>
         </div>
     </div>
 
@@ -105,7 +107,7 @@
             document.getElementById('bidModal').classList.toggle('active');
         }
         document.getElementById('confirmBid').onclick = function() {
-            alert('카드 등록 기능(PG사 연동)을 준비 중입니다.\n사장님, 여기까지가 기획하신 예약금 차압 로직의 핵심입니다!');
+            alert('카드 등록 기능을 준비 중입니다.');
             toggleModal();
         }
     </script>
