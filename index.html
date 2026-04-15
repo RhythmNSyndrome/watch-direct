@@ -78,4 +78,48 @@
     </div>
 
     <div id="detail" class="page pb-32">
-        <button onclick="showPage('home')" class="p-4 text-slate-400">
+        <button onclick="showPage('home')" class="p-4 text-slate-400">← 뒤로가기</button>
+        <img src="https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=1000" class="w-full aspect-square object-cover">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold">Rolex Daytona</h2>
+            <div class="bg-[#1A365D] text-white p-5 rounded-2xl mt-4">
+                <p class="text-xs opacity-70">현재 최고가</p>
+                <p class="text-3xl font-bold font-mono">₩ 48,500,000</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-3 flex justify-between items-center z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+        <button onclick="showPage('home')" class="nav-item active flex flex-col items-center gap-1">
+            <span class="text-xl">🏠</span>
+            <span class="text-[10px]">홈</span>
+        </button>
+        <button onclick="showPage('sell')" class="nav-item flex flex-col items-center gap-1">
+            <span class="text-xl">➕</span>
+            <span class="text-[10px]">판매등록</span>
+        </button>
+        <button onclick="showPage('support')" class="nav-item flex flex-col items-center gap-1">
+            <span class="text-xl">💬</span>
+            <span class="text-[10px]">고객센터</span>
+        </button>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // 모든 페이지 숨기기
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // 선택한 페이지 보여주기
+            document.getElementById(pageId).classList.add('active');
+            
+            // 내비게이션 아이콘 활성화 상태 변경
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            // 간단한 로직상 순서대로 인덱스 매칭 (홈=0, 판매=1, 센터=2)
+            const idx = pageId === 'home' ? 0 : pageId === 'sell' ? 1 : pageId === 'support' ? 2 : -1;
+            if(idx !== -1) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+
+            // 페이지 이동 시 상단으로 스크롤
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
