@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, max-scale=1.0, user-scalable=no">
-    <title>WATCH DIRECT - Auth</title>
+    <title>WATCH DIRECT - Master</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -23,7 +23,7 @@
 
         let currentUser = null;
 
-        // [기능] 사용자 상태 체크 (로그인 되어있는지)
+        // [인증] 사용자 상태 체크
         async function checkUser() {
             const { data: { user } } = await _supabase.auth.getUser();
             currentUser = user;
@@ -31,52 +31,43 @@
             fetchWatches();
         }
 
-        // [기능] 회원가입/로그인 (테스트를 위해 가입과 로그인을 동시에 처리)
         async function handleAuth() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-pw').value;
-            if(!email || !password) { alert('이메일과 비번을 입력해주세요.'); return; }
-
-            // 일단 로그인 시도
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
             
             if (error) {
-                // 로그인 실패하면 가입 시도
                 const { error: signUpError } = await _supabase.auth.signUp({ email, password });
                 if (signUpError) { alert('에러: ' + signUpError.message); return; }
-                alert('가입되었습니다! 다시 로그인해주세요.');
+                alert('가입 완료! 다시 로그인해주세요.');
             } else {
                 currentUser = data.user;
-                alert('반갑습니다 사장님!');
+                alert('로그인 성공!');
                 showPage('home');
                 updateUI();
             }
         }
 
-        // [기능] 로그아웃
         async function handleLogout() {
             await _supabase.auth.signOut();
             currentUser = null;
-            updateUI();
-            showPage('home');
+            location.reload(); // 깔끔하게 새로고침
         }
 
         function updateUI() {
-            const authStatus = document.getElementById('auth-status');
-            const sellBtn = document.getElementById('sell-nav-btn');
-            
+            const status = document.getElementById('auth-status');
             if (currentUser) {
-                authStatus.innerText = currentUser.email + ' (Logged In)';
+                status.innerText = currentUser.email.split('@')[0] + '님';
                 document.getElementById('login-box').style.display = 'none';
                 document.getElementById('profile-box').style.display = 'block';
             } else {
-                authStatus.innerText = 'Not Logged In';
+                status.innerText = '로그인 필요';
                 document.getElementById('login-box').style.display = 'block';
                 document.getElementById('profile-box').style.display = 'none';
             }
         }
 
-        // [기능] 매물 불러오기 (기존 동일)
+        // [기능] 매물 불러오기
         async function fetchWatches() {
             const { data, error } = await _supabase.from('watches').select('*').order('created_at', { ascending: false });
             if (error) return;
@@ -85,27 +76,71 @@
             data?.forEach(watch => {
                 const img = watch.image_url || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=500';
                 container.innerHTML += `
-                    <div onclick="openDetail('${watch.model_name}', ${watch.target_price}, '${img}')" class="bg-white rounded-2xl overflow-hidden shadow-sm border p-2">
-                        <img src="${img}" class="w-full aspect-square object-cover rounded-xl">
+                    <div onclick="openDetail('${watch.model_name}', ${watch.target_price}, '${img}')" class="bg-white rounded-2xl overflow-hidden shadow-sm border p-2 active:scale-95 transition-all cursor-pointer">
+                        <img src="${img}" class="w-full aspect-square object-cover rounded-xl bg-slate-50">
                         <div class="mt-2 px-1">
                             <h3 class="font-bold text-sm truncate">${watch.model_name}</h3>
-                            <p class="text-xs text-slate-400">₩ ${Number(watch.target_price).toLocaleString()}</p>
+                            <p class="text-xs text-slate-400 font-mono">₩ ${Number(watch.target_price).toLocaleString()}</p>
                         </div>
                     </div>
                 `;
             });
         }
 
+        // [기능] 진짜 매물 등록 (로그인 유저만 가능)
+        async function uploadWatch() {
+            if (!currentUser) { alert('로그인이 필요합니다!'); return; }
+            
+            const model = document.getElementById('input-model').value;
+            const price = document.getElementById('input-price').value;
+            const fileInput = document.getElementById('input-image');
+            const btn = document.getElementById('reg-btn');
+            
+            if(!model || !price || !fileInput.files[0]) { alert('사진과 정보를 모두 입력하세요.'); return; }
+
+            btn.innerText = '업로드 중...';
+            btn.disabled = true;
+
+            const file = fileInput.files[0];
+            const fileName = `${Date.now()}_${file.name}`;
+            const { data: uploadData, error: uploadError } = await _supabase.storage.from('watch-images').upload(fileName, file);
+
+            if (uploadError) { alert('사진 업로드 실패'); btn.disabled = false; return; }
+
+            const { data: urlData } = _supabase.storage.from('watch-images').getPublicUrl(fileName);
+            
+            const { error: dbError } = await _supabase.from('watches').insert([
+                { model_name: model, target_price: parseInt(price), image_url: urlData.publicUrl }
+            ]);
+
+            if (dbError) { alert('등록 에러'); } 
+            else {
+                alert('매물이 등록되었습니다!');
+                showPage('home');
+                fetchWatches();
+            }
+            btn.innerText = '검수 예약 및 등록';
+            btn.disabled = false;
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const output = document.getElementById('preview-img');
+                output.src = reader.result;
+                output.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
         function showPage(pageId) {
-            // 로그인 안 되어있는데 판매 탭 누르면 차단!
             if (pageId === 'sell' && !currentUser) {
-                alert('시계를 팔려면 로그인이 필요합니다!');
+                alert('판매는 로그인 후 가능합니다!');
                 showPage('support');
                 return;
             }
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            window.scrollTo(0, 0);
         }
 
         function openDetail(name, price, img) {
@@ -119,8 +154,8 @@
     </script>
 
     <nav class="bg-white border-b p-4 sticky top-0 z-50 flex justify-between items-center">
-        <h1 onclick="showPage('home')" class="text-xl font-black text-[#1A365D] tracking-tighter cursor-pointer">WATCH DIRECT</h1>
-        <p id="auth-status" class="text-[10px] font-bold text-slate-300"></p>
+        <h1 onclick="showPage('home')" class="text-xl font-black text-[#1A365D] tracking-tighter cursor-pointer underline decoration-4">WATCH DIRECT</h1>
+        <span id="auth-status" class="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded-full text-slate-500"></span>
     </nav>
 
     <div id="home" class="page active pb-24 p-4">
@@ -128,45 +163,51 @@
     </div>
 
     <div id="sell" class="page pb-24 p-6">
-        <h2 class="text-2xl font-black mb-6">판매 등록</h2>
-        <p class="text-xs text-slate-400 mb-4 font-bold">인증된 판매자 전용 폼입니다.</p>
-        <div class="space-y-4">
+        <h2 class="text-2xl font-black mb-6">시계 판매 등록</h2>
+        <div class="space-y-6">
+            <div class="bg-slate-100 rounded-2xl p-4 text-center border-2 border-dashed border-slate-300 relative aspect-video flex flex-col items-center justify-center overflow-hidden">
+                <input type="file" id="input-image" class="hidden" accept="image/*" onchange="previewImage(event)">
+                <label for="input-image" class="cursor-pointer z-10 font-bold text-slate-500 text-xs">📸 시계 사진 선택</label>
+                <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hidden">
+            </div>
             <input id="input-model" type="text" placeholder="모델명" class="w-full border-b py-3 outline-none">
-            <input id="input-price" type="number" placeholder="가격(₩)" class="w-full border-b py-3 outline-none">
-            <button onclick="alert('가입 성공하셨으니 이제 진짜 매물 등록도 가능합니다!')" class="w-full bg-[#1A365D] text-white py-5 rounded-2xl font-bold">등록하기</button>
+            <input id="input-price" type="number" placeholder="희망 판매가(₩)" class="w-full border-b py-3 outline-none font-mono">
+            <button id="reg-btn" onclick="uploadWatch()" class="w-full bg-[#1A365D] text-white py-5 rounded-2xl font-bold shadow-xl">검수 예약 및 등록</button>
         </div>
     </div>
 
     <div id="support" class="page pb-24 p-6">
         <div id="login-box" class="py-10">
-            <h2 class="text-3xl font-black mb-2">Member</h2>
-            <p class="text-slate-400 text-sm mb-8">안전한 거래를 위해 로그인해주세요.</p>
+            <h2 class="text-3xl font-black mb-2">Welcome</h2>
+            <p class="text-slate-400 text-sm mb-8 font-medium">로그인 후 자유롭게 거래하세요.</p>
             <div class="space-y-4">
-                <input id="auth-email" type="email" placeholder="이메일 주소" class="w-full bg-white border p-4 rounded-2xl outline-none">
+                <input id="auth-email" type="email" placeholder="이메일" class="w-full bg-white border p-4 rounded-2xl outline-none">
                 <input id="auth-pw" type="password" placeholder="비밀번호" class="w-full bg-white border p-4 rounded-2xl outline-none">
-                <button onclick="handleAuth()" class="w-full bg-[#1A365D] text-white py-4 rounded-2xl font-bold shadow-lg">로그인 / 1초 회원가입</button>
+                <button onclick="handleAuth()" class="w-full bg-[#1A365D] text-white py-4 rounded-2xl font-bold shadow-lg">로그인 / 회원가입</button>
             </div>
         </div>
-
-        <div id="profile-box" class="py-10 hidden text-center">
-            <h2 class="text-2xl font-black mb-4">내 정보</h2>
-            <button onclick="handleLogout()" class="text-red-500 font-bold underline">로그아웃</button>
+        <div id="profile-box" class="py-10 hidden">
+            <div class="bg-white p-6 rounded-3xl border shadow-sm text-center">
+                <div class="w-16 h-16 bg-slate-100 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl">⌚</div>
+                <p class="font-bold text-slate-800 mb-6">반갑습니다, 사장님!</p>
+                <button onclick="handleLogout()" class="text-red-500 text-sm font-bold underline">로그아웃</button>
+            </div>
         </div>
     </div>
 
     <div id="detail" class="page bg-white">
-        <button onclick="showPage('home')" class="p-6 font-bold underline">← 뒤로</button>
+        <button onclick="showPage('home')" class="p-6 font-bold">← 뒤로가기</button>
         <img id="detail-img" class="w-full aspect-square object-cover">
         <div class="p-6">
-            <h2 id="detail-name" class="text-2xl font-bold"></h2>
+            <h2 id="detail-name" class="text-2xl font-black"></h2>
             <p id="detail-price" class="text-3xl font-black mt-2 text-[#1A365D]"></p>
         </div>
     </div>
 
     <div class="fixed bottom-0 left-0 right-0 bg-white/95 border-t px-10 py-4 flex justify-between z-50">
-        <button onclick="showPage('home')" class="nav-item active flex flex-col items-center"><span>🏠</span><span class="text-[10px]">홈</span></button>
-        <button onclick="showPage('sell')" id="sell-nav-btn" class="nav-item flex flex-col items-center"><span>➕</span><span class="text-[10px]">판매</span></button>
-        <button onclick="showPage('support')" class="nav-item flex flex-col items-center"><span>👤</span><span class="text-[10px]">MY</span></button>
+        <button onclick="showPage('home')" class="nav-item active flex flex-col items-center flex-1"><span>🏠</span><span class="text-[10px] font-bold">홈</span></button>
+        <button onclick="showPage('sell')" class="nav-item flex flex-col items-center flex-1"><span>➕</span><span class="text-[10px] font-bold">판매</span></button>
+        <button onclick="showPage('support')" class="nav-item flex flex-col items-center flex-1"><span>👤</span><span class="text-[10px] font-bold">MY</span></button>
     </div>
 
 </body>
