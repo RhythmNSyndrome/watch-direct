@@ -101,7 +101,7 @@
 
             if (uploadError) { alert('사진 업로드 실패'); btn.disabled = false; return; }
 
-            const { data: urlData } = _supabase.storage.from('watch-images').getPublicUrl(fileName);
+            const { data } = _supabase.storage.from('watch-images').getPublicUrl(fileName, { public: true });
             
             const { error: dbError } = await _supabase.from('watches').insert([
                 { model_name: model, target_price: parseInt(price), image_url: urlData.publicUrl }
